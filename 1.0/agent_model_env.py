@@ -24,7 +24,7 @@ class FurnaceEnv(gym.Env):
 
     metadata = {"render_modes": [None], 'render_fps': 1}
 
-    def __init__(self, datasets, row_per_episode=1):
+    def __init__(self, datasets):
         super().__init__()
 
         # Inicializar el actor
@@ -37,17 +37,13 @@ class FurnaceEnv(gym.Env):
         self.observation_space = spaces.Box(0, 1e10, shape=(7,), dtype=np.float32)
 
         # Initialize parameters
-        self.row_per_episode = row_per_episode
-        self.step_count = 0
-        self.random = random
         self.dataset_idx = 0
 
     def reset(self, seed=None, options={}):
         super().reset(seed=seed, options=options)
 
         self.furnace_actor.reset(seed=seed)
-        self.step_count = 0
-        info = {}
+        info = {"potencia": self.furnace_actor.potencia}
         obs = self._next_obs()
 
         return obs, info
@@ -76,8 +72,8 @@ class FurnaceEnv(gym.Env):
                 reward += -10
             terminated = True
         
-        # Devuelve observación, reward, terminated, truncated
-        return obs, reward, terminated, False, {}
+        # Devuelve observación, reward, terminated, truncated, info
+        return obs, reward, terminated, False, {"potencia": self.furnace_actor.potencia}
     
     # Retorna la acción esperada en base a los valores de potencia (valor heurístico)
     def get_accion_esperada(self, potencia_inicial, potencia_final):
@@ -136,7 +132,7 @@ if __name__ == '__main__':
     register(
         id='furnace-agent-v0',                               
         entry_point='agent_model_env:FurnaceEnv',
-        kwargs={'datasets': split_csv_list, 'row_per_episode': 1}
+        kwargs={'datasets': split_csv_list}
     )
 
     '''
@@ -157,9 +153,9 @@ if __name__ == '__main__':
     while True:
         rand_action = env.action_space.sample()
         print(model.Action(rand_action))
-        obs, reward, terminated, _, _ = env.step(rand_action)
+        obs, reward, terminated, _, info = env.step(rand_action)
 
-        print(obs, reward, terminated)
+        print(obs, reward, terminated, info)
 
         if(terminated):
             obs, info = env.reset()

@@ -69,32 +69,30 @@ class FurnaceModel:
 
 def FeatureEngineering(dataset):
     
-    # Solo considera el primer split
     df = pd.read_csv(dataset[0])
     df = df.drop(columns=['date_time', 'elapsed_time_seconds', 'elapsed_time', 'cumulative_elapsed_time'])
-
     df['finished'] = 0
     df.loc[df.index[-1], 'finished'] = 1
     df['finished'] = df['finished'].astype(int)
-
     df['consumo_max'] = 0
     df.loc[df.index[-1], 'consumo_max'] = df['consumo'].max()
-
     df['potencia'] = df['potencia'].astype(int)
-
     df = df.drop(columns=['consumo'])
+    # df = df.drop(columns=['potencia', 'finished', 'consumo_max'])
 
-    # Contatena todos los splits
-    '''
     for i in dataset[1:]:
         aux_df = pd.read_csv(i)
-        aux_df = aux_df.drop(columns=['date_time', 'elapsed_time_seconds', 'elapsed_time', 'consumo', 'cumulative_elapsed_time'])
-        aux_y = aux_df.pop('energia_tot')
+        aux_df = aux_df.drop(columns=['date_time', 'elapsed_time_seconds', 'elapsed_time', 'cumulative_elapsed_time'])
+        aux_df['finished'] = 0
+        aux_df.loc[aux_df.index[-1], 'finished'] = 1
+        aux_df['finished'] = aux_df['finished'].astype(int)
+        aux_df['consumo_max'] = 0
+        aux_df.loc[aux_df.index[-1], 'consumo_max'] = aux_df['consumo'].max()
+        aux_df['potencia'] = aux_df['potencia'].astype(int)
+        aux_df = aux_df.drop(columns=['consumo'])
 
         df = pd.concat([df, aux_df], ignore_index=True)
-        y = pd.concat([y, aux_y], ignore_index=True)
-    '''
-        
+    
     return df
 
 def sorted_alphanumeric(data):

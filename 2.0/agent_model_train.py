@@ -6,6 +6,8 @@ import os
 import agent_model as model
 from glob import glob
 from gymnasium.envs.registration import register
+import pandas as pd
+from time import sleep
 
 #  Train using StableBaseline3
 def train(env, sb3_algo):
@@ -29,26 +31,34 @@ def train(env, sb3_algo):
 def test(env, path_to_model):        
     model = sb3_class.load(path_to_model, env=env)
 
-    obs = env.reset()[0]   
+    potencias = []
+
+    obs, info = env.reset() 
+    potencias.append(info["potencia"])
     while True:
         action, _ = model.predict(obs)
-        obs, _, terminated, _, _ = env.step(action)
+        obs, _, terminated, _, info = env.step(action)
 
-        print(action)
-        print(obs)
+        print(f'Acción: {action}')
+        print(info)
+
+        potencias.append(info)
 
         if terminated:
             break
 
+        sleep(2)
+
+
 if __name__ == '__main__':
 
-    split_csv_list = glob("../prediccion-horno/generados/inicial/*.csv")
+    split_csv_list = glob("../../prediccion-horno/generados/inicial/*.csv")
     split_csv_list = model.sorted_alphanumeric(split_csv_list)
 
     register(
         id='furnace-agent-v0',                               
         entry_point='agent_model_env:FurnaceEnv',
-        kwargs={'datasets': split_csv_list, 'row_per_episode': 1}
+        kwargs={'datasets': split_csv_list}
     )
 
     parser = argparse.ArgumentParser(description='Train or test model.')
