@@ -20,8 +20,8 @@ python agent_model_train.py DQN -t
 
 El flujo que ocupa sb3 para su entrenamiento es ocupar la función train, que sigue el siguiente flujo:
 
-1. `reset()`
-2. `step()`
+1. `reset()` para el primer elemento de un split
+2. `step()` para los siguientes hasta terminar el split dada la variable `terminated`
 
 y así sucesivamente hasta que se detiene el entrenamiento.
 
